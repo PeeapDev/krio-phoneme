@@ -307,6 +307,68 @@ function encodeWav(pcm, sr) {
   return new Blob([out], { type: 'audio/wav' });
 }
 
+// === Lexicon editor ===
+const lexWord = document.getElementById('lexWord');
+const lexGloss = document.getElementById('lexGloss');
+const lexPreview = document.getElementById('lexPreview');
+const lexList = document.getElementById('lexList');
+
+async function previewWord() {
+  const w = lexWord.value.trim().toLowerCase();
+  if (!w) { lexPreview.textContent = ''; return; }
+  const r = await fetch('/api/tokenize', {
+    method: 'POST', headers: {'content-type':'application/json'},
+    body: JSON.stringify({ text: w })
+  }).then(r => r.json());
+  const toks = r.words[0]?.tokens || [];
+  const unknown = toks.filter(t => !t.known).map(t => t.token);
+  if (unknown.length) {
+    lexPreview.innerHTML = `<span style="color:#e74c3c">unknown: ${unknown.join(', ')}</span>`;
+  } else {
+    lexPreview.innerHTML = 'phonemes → ' + toks.map(t => `<span class="tok">${t.token}</span>`).join('');
+  }
+}
+lexWord.addEventListener('input', previewWord);
+
+async function loadLexicon() {
+  const r = await fetch('/api/lexicon').then(r => r.json());
+  const entries = Object.entries(r.words || {}).sort(([a], [b]) => a.localeCompare(b));
+  lexList.innerHTML = entries.map(([w, e]) => `
+    <div class="lex-item">
+      <div>
+        <div class="w">${w}</div>
+        <div class="p">${e.phonemes.join(' · ')}</div>
+        ${e.gloss ? `<div class="g">${e.gloss}</div>` : ''}
+      </div>
+      <button data-word="${w}" class="del-word">×</button>
+    </div>
+  `).join('') || '<div class="muted">No words yet.</div>';
+  lexList.querySelectorAll('.del-word').forEach(b => b.onclick = async () => {
+    await fetch('/api/lexicon/' + encodeURIComponent(b.dataset.word), { method: 'DELETE' });
+    loadLexicon();
+  });
+}
+
+document.getElementById('btnAddWord').onclick = async () => {
+  const word = lexWord.value.trim().toLowerCase();
+  const gloss = lexGloss.value.trim();
+  if (!word) return;
+  const r = await fetch('/api/lexicon', {
+    method: 'POST', headers: {'content-type':'application/json'},
+    body: JSON.stringify({ word, gloss })
+  });
+  const data = await r.json();
+  if (!r.ok) { alert(data.error || 'Failed'); return; }
+  lexWord.value = ''; lexGloss.value = ''; lexPreview.textContent = '';
+  loadLexicon();
+};
+lexWord.addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnAddWord').click();
+});
+lexGloss.addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnAddWord').click();
+});
+
 document.getElementById('btnAnalyze').onclick = async () => {
   const text = textInput.value.trim();
   if (!text) return;
@@ -348,3 +410,4 @@ document.getElementById('btnPronounce').onclick = async () => {
 };
 
 loadPhonemes();
+loadLexicon();

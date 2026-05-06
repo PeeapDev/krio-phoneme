@@ -10,13 +10,13 @@
       "type": "object",
       "additionalProperties": {
         "oneOf": [
-          { "type": "string", "pattern": "^phoneme_.+\\.wav$" },
+          { "type": "string", "pattern": "\\.wav$" },
           {
             "type": "object",
             "required": ["file"],
             "additionalProperties": false,
             "properties": {
-              "file":         { "type": "string", "pattern": "^phoneme_.+\\.wav$" },
+              "file":         { "type": "string", "pattern": "\\.wav$" },
               "speaker":      { "type": "string" },
               "sample_rate":  { "type": "integer", "minimum": 8000, "maximum": 96000 },
               "duration_ms":  { "type": "number", "minimum": 0 },

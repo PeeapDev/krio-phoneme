@@ -1,5 +1,5 @@
 {
-  "digraphs": ["ch", "sh", "ng", "ny", "gb", "kp"],
+  "digraphs": ["ch", "sh", "ng"],
   "phonemes": {
     "a":  { "ipa": "/a/",   "type": "vowel",     "example": "bata (shoe)" },
     "e":  { "ipa": "/e/",   "type": "vowel",     "example": "se (say)" },
@@ -28,9 +28,6 @@
     "z":  { "ipa": "/z/",   "type": "consonant", "example": "zinc" },
     "ch": { "ipa": "/tʃ/",  "type": "consonant", "example": "chop (food)" },
     "sh": { "ipa": "/ʃ/",   "type": "consonant", "example": "shap (sharp)" },
-    "ng": { "ipa": "/ŋ/",   "type": "consonant", "example": "sing" },
-    "ny": { "ipa": "/ɲ/",   "type": "consonant", "example": "nyam (eat)" },
-    "gb": { "ipa": "/ɡ͡b/", "type": "consonant", "example": "gbele (belly)" },
-    "kp": { "ipa": "/k͡p/", "type": "consonant", "example": "kpata (firmly)" }
+    "ng": { "ipa": "/ŋ/",   "type": "consonant", "example": "sing" }
   }
 }

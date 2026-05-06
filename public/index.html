@@ -36,7 +36,19 @@
     </section>
 
     <section>
-      <h2>2. Pronounce Text</h2>
+      <h2>2. Lexicon</h2>
+      <p class="hint">Type any Krio word. The tokenizer auto-splits it into phonemes (digraphs first). Add a gloss to remember the meaning.</p>
+      <div class="row">
+        <input id="lexWord"  type="text" placeholder="Krio word (e.g. kushe)" />
+        <input id="lexGloss" type="text" placeholder="English gloss (optional)" />
+        <button id="btnAddWord">Add</button>
+      </div>
+      <div id="lexPreview" class="muted" style="margin-top:6px;font-size:13px"></div>
+      <div id="lexList" class="lex-list"></div>
+    </section>
+
+    <section>
+      <h2>3. Pronounce Text</h2>
       <div class="row">
         <input id="textInput" type="text" placeholder="e.g. bata kushe chop" />
         <button id="btnPronounce">Pronounce</button>

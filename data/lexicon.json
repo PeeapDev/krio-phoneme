@@ -36,9 +36,6 @@
     "long":   { "phonemes": ["l","o","ng"],         "gloss": "long" },
     "shap":   { "phonemes": ["sh","a","p"],         "gloss": "sharp / quick" },
     "fish":   { "phonemes": ["f","i","sh"],         "gloss": "fish" },
-    "gbele":  { "phonemes": ["gb","e","l","e"],     "gloss": "belly / stomach" },
-    "kpata":  { "phonemes": ["kp","a","t","a"],     "gloss": "loudly / firmly" },
-    "nyam":   { "phonemes": ["ny","a","m"],         "gloss": "eat (informal)" },
     "tin":    { "phonemes": ["t","i","n"],          "gloss": "thing" },
     "bin":    { "phonemes": ["b","i","n"],          "gloss": "past tense marker" },
     "dem":    { "phonemes": ["d","e","m"],          "gloss": "they / them" }

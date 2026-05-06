@@ -38,3 +38,9 @@ audio { height: 28px; }
 .guided-status { text-align: center; margin-top: 10px; min-height: 18px; font-size: 13px; color: #8a93a6; }
 .guided-status.ok { color: #2ecc71; }
 .guided-status.err { color: #e74c3c; }
+.lex-list { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 8px; }
+.lex-item { background: #161922; border: 1px solid #232735; border-radius: 6px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.lex-item .w { font-weight: 600; }
+.lex-item .p { color: #cfe0ff; font-family: ui-monospace, monospace; font-size: 12px; }
+.lex-item .g { color: #8a93a6; font-size: 12px; }
+.lex-item button { padding: 2px 6px; font-size: 11px; }

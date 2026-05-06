@@ -18,7 +18,7 @@ const PHONEMES_FILE = path.join(DATA_DIR, 'phonemes.json');
 const RECORDINGS_FILE = path.join(DATA_DIR, 'recordings.json');
 const LEXICON_FILE = path.join(DATA_DIR, 'lexicon.json');
 
-for (const d of [DATA_DIR, AUDIO_DIR]) {
+for (const d of [DATA_DIR, AUDIO_DIR, path.join(AUDIO_DIR, 'vowels'), path.join(AUDIO_DIR, 'consonants')]) {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 }
 
@@ -63,17 +63,26 @@ try {
   process.exit(1);
 }
 
-// Strict file naming: phoneme_<key>.wav
+// Strict file naming: <vowels|consonants>/<key>.wav (ascii) or u_<hex>.wav (non-ascii)
 function safeName(key) {
-  // Hash non-ASCII keys (e.g. ɛ, ɔ) to keep filenames portable.
-  if (/^[a-z]+$/.test(key)) return `phoneme_${key}.wav`;
+  if (/^[a-z]+$/.test(key)) return `${key}.wav`;
   const hex = Buffer.from(key, 'utf8').toString('hex');
-  return `phoneme_u_${hex}.wav`;
+  return `u_${hex}.wav`;
+}
+function bucketFor(key) {
+  // Look up phoneme type at request time; falls back to consonants for safety.
+  try {
+    const reg = readJson(PHONEMES_FILE);
+    return reg.phonemes[key]?.type === 'vowel' ? 'vowels' : 'consonants';
+  } catch { return 'consonants'; }
+}
+function relativePathFor(key) {
+  return `${bucketFor(key)}/${safeName(key)}`;
 }
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, AUDIO_DIR),
+    destination: (req, _file, cb) => cb(null, path.join(AUDIO_DIR, bucketFor(req.params.key))),
     filename: (req, _file, cb) => cb(null, safeName(req.params.key))
   }),
   fileFilter: (_req, file, cb) => {
@@ -127,9 +136,12 @@ app.post('/api/recordings/:key', upload.single('audio'), (req, res) => {
     const buf = fs.readFileSync(filePath);
     const sha256 = crypto.createHash('sha256').update(buf).digest('hex');
 
+    // File path is bucket/filename relative to audio root.
+    const relPath = path.relative(AUDIO_DIR, filePath).replace(/\\/g, '/');
+
     // Optional client-supplied audio metadata.
     const meta = {
-      file: path.basename(filePath),
+      file: relPath,
       speaker: (req.body && req.body.speaker) || 'speaker_01',
       recorded_at: new Date().toISOString(),
       sha256
@@ -157,7 +169,8 @@ app.delete('/api/recordings/:key', (req, res) => {
   const entry = rec.recordings[req.params.key];
   const file = recFile(entry);
   if (file) {
-    const p = path.join(AUDIO_DIR, file);
+    // file may be relative path "vowels/a.wav" or legacy "phoneme_a.wav"
+    const p = path.isAbsolute(file) ? file : path.join(AUDIO_DIR, file);
     if (fs.existsSync(p)) fs.unlinkSync(p);
     delete rec.recordings[req.params.key];
     saveRecordings(rec);
@@ -180,9 +193,54 @@ app.post('/api/syllabify', (req, res) => {
   });
 });
 
+function loadLexicon() {
+  if (!fs.existsSync(LEXICON_FILE)) return { version: 1, words: {} };
+  const lex = readJson(LEXICON_FILE);
+  return assertValid('lexicon', lex);
+}
+function saveLexicon(lex) {
+  assertValid('lexicon', lex);
+  const reg = loadRegistry();
+  assertLexiconConsistency(reg, lex);
+  writeJson(LEXICON_FILE, lex);
+}
+
 app.get('/api/lexicon', (_req, res) => {
-  if (!fs.existsSync(LEXICON_FILE)) return res.json({ version: 1, words: {} });
-  res.json(readJson(LEXICON_FILE));
+  res.json(loadLexicon());
+});
+
+app.post('/api/lexicon', (req, res) => {
+  try {
+    const word = String(req.body.word || '').trim().toLowerCase();
+    if (!word) return res.status(400).json({ error: 'word is required' });
+    const reg = loadRegistry();
+
+    // Use the deterministic tokenizer to derive phonemes from the spelling.
+    const toks = tokenize(word, reg)[0]?.tokens || [];
+    const unknown = toks.filter(t => !t.known).map(t => t.token);
+    if (unknown.length) {
+      return res.status(400).json({ error: `unknown character(s): ${unknown.join(', ')}` });
+    }
+    const phonemes = toks.map(t => t.token);
+
+    const lex = loadLexicon();
+    lex.words[word] = {
+      phonemes,
+      gloss: String(req.body.gloss || '').trim() || undefined
+    };
+    if (!lex.words[word].gloss) delete lex.words[word].gloss;
+    saveLexicon(lex);
+    res.json({ word, phonemes, gloss: lex.words[word].gloss || null });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.delete('/api/lexicon/:word', (req, res) => {
+  const lex = loadLexicon();
+  delete lex.words[req.params.word];
+  saveLexicon(lex);
+  res.json({ ok: true });
 });
 
 app.post('/api/pronounce', (req, res) => {
