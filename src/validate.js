@@ -10,11 +10,13 @@ const SCHEMAS = path.join(__dirname, '..', 'schemas');
 const phonemeSchema   = JSON.parse(fs.readFileSync(path.join(SCHEMAS, 'phonemes.schema.json'), 'utf8'));
 const recordingSchema = JSON.parse(fs.readFileSync(path.join(SCHEMAS, 'recordings.schema.json'), 'utf8'));
 const lexiconSchema   = JSON.parse(fs.readFileSync(path.join(SCHEMAS, 'lexicon.schema.json'), 'utf8'));
+const wordRecSchema   = JSON.parse(fs.readFileSync(path.join(SCHEMAS, 'word-recordings.schema.json'), 'utf8'));
 
 const validators = {
-  phonemes:   ajv.compile(phonemeSchema),
-  recordings: ajv.compile(recordingSchema),
-  lexicon:    ajv.compile(lexiconSchema)
+  phonemes:        ajv.compile(phonemeSchema),
+  recordings:      ajv.compile(recordingSchema),
+  lexicon:         ajv.compile(lexiconSchema),
+  'word-recordings': ajv.compile(wordRecSchema)
 };
 
 function fmt(errors) {

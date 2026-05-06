@@ -334,19 +334,31 @@ async function loadLexicon() {
   const r = await fetch('/api/lexicon').then(r => r.json());
   const entries = Object.entries(r.words || {}).sort(([a], [b]) => a.localeCompare(b));
   lexList.innerHTML = entries.map(([w, e]) => `
-    <div class="lex-item">
-      <div>
-        <div class="w">${w}</div>
+    <div class="lex-item ${e.audio ? 'has-word-audio' : ''}">
+      <div style="flex:1">
+        <div class="w">${w} ${e.audio ? '<span class="word-audio-tag">●</span>' : ''}</div>
         <div class="p">${e.phonemes.join(' · ')}</div>
         ${e.gloss ? `<div class="g">${e.gloss}</div>` : ''}
+        ${e.audio ? `<audio controls src="${e.audio}" style="margin-top:4px"></audio>` : ''}
       </div>
-      <button data-word="${w}" class="del-word">×</button>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <button data-word="${w}" class="rec-word">${e.audio ? '↻' : '●'} rec</button>
+        ${e.audio ? `<button data-word="${w}" class="del-word-audio">drop audio</button>` : ''}
+        <button data-word="${w}" class="del-word">× del</button>
+      </div>
     </div>
   `).join('') || '<div class="muted">No words yet.</div>';
+
   lexList.querySelectorAll('.del-word').forEach(b => b.onclick = async () => {
+    if (!confirm(`Delete lexicon entry "${b.dataset.word}"?`)) return;
     await fetch('/api/lexicon/' + encodeURIComponent(b.dataset.word), { method: 'DELETE' });
     loadLexicon();
   });
+  lexList.querySelectorAll('.del-word-audio').forEach(b => b.onclick = async () => {
+    await fetch('/api/word-recordings/' + encodeURIComponent(b.dataset.word), { method: 'DELETE' });
+    loadLexicon();
+  });
+  lexList.querySelectorAll('.rec-word').forEach(b => b.onclick = () => recordWord(b.dataset.word, b));
 }
 
 document.getElementById('btnAddWord').onclick = async () => {
@@ -368,6 +380,55 @@ lexWord.addEventListener('keydown', e => {
 lexGloss.addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('btnAddWord').click();
 });
+
+// === Per-word recording (word-level natural audio) ===
+const wordRecState = {};
+async function recordWord(word, btn) {
+  const s = wordRecState[word];
+  if (s && s.active) {
+    s.recorder.stop();
+    btn.textContent = '● rec';
+    btn.classList.remove('active');
+    return;
+  }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, noiseSuppression: true } });
+  } catch (e) { alert('Mic denied: ' + e.message); return; }
+
+  const chunks = [];
+  const recorder = new MediaRecorder(stream);
+  wordRecState[word] = { active: true, recorder };
+  btn.textContent = '■ stop';
+  btn.classList.add('active');
+
+  recorder.ondataavailable = ev => chunks.push(ev.data);
+  recorder.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    wordRecState[word] = { active: false };
+    const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+    try {
+      const { blob: wav, meta } = await blobToWav(blob);
+      // Word-level quality gate: more lenient duration window than single phonemes.
+      if (meta.duration_ms < 200 || meta.duration_ms > 3500) {
+        alert(`Rejected: duration ${meta.duration_ms}ms out of [200, 3500]`); loadLexicon(); return;
+      }
+      if (meta.peak_db > -1.0) { alert('Rejected: clipping detected'); loadLexicon(); return; }
+      if (meta.rms_db < -40)   { alert('Rejected: too quiet (RMS < -40 dB)'); loadLexicon(); return; }
+
+      const fd = new FormData();
+      fd.append('audio', wav, `${word}.wav`);
+      fd.append('sample_rate', meta.sample_rate);
+      fd.append('duration_ms', meta.duration_ms);
+      fd.append('rms_db', meta.rms_db);
+      fd.append('peak_db', meta.peak_db);
+      const r = await fetch('/api/word-recordings/' + encodeURIComponent(word), { method: 'POST', body: fd });
+      if (!r.ok) { const err = await r.json().catch(() => ({})); alert('Save failed: ' + (err.error || r.statusText)); }
+      loadLexicon();
+    } catch (e) { alert('Encode failed: ' + e.message); }
+  };
+  recorder.start();
+}
 
 // === Bulk import ===
 const bulkText = document.getElementById('bulkText');

@@ -1,4 +1,285 @@
 {
   "speaker": "speaker_01",
-  "recordings": {}
+  "recordings": {
+    "a": {
+      "file": "vowels/a.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:36:38.254Z",
+      "sha256": "71d424cb84e8b53e58eef1924b90ce71c39feac13168aca89cd87132110abd41",
+      "sample_rate": 16000,
+      "duration_ms": 470,
+      "rms_db": -19,
+      "peak_db": -4.76
+    },
+    "e": {
+      "file": "vowels/e.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:36:53.178Z",
+      "sha256": "2d9c12af16a3638e51214ca1ce91e6e3d13d3974d8f7ae3de802c942f634b67a",
+      "sample_rate": 16000,
+      "duration_ms": 2090,
+      "rms_db": -22.93,
+      "peak_db": -2.32
+    },
+    "i": {
+      "file": "vowels/i.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:37:45.047Z",
+      "sha256": "5b89e7ef002b7b1caf101f8f0808d65b393eda1ad11415f1187a89215fe13cee",
+      "sample_rate": 16000,
+      "duration_ms": 610,
+      "rms_db": -24.54,
+      "peak_db": -11.78
+    },
+    "ɛ": {
+      "file": "vowels/u_c99b.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:37:51.471Z",
+      "sha256": "4cf7d06cfc24eeaa056aaf88cd17c42c4dce3cd89dc81a8c294e753f9c02ac25",
+      "sample_rate": 16000,
+      "duration_ms": 340,
+      "rms_db": -17.46,
+      "peak_db": -2.61
+    },
+    "o": {
+      "file": "vowels/o.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:38:01.799Z",
+      "sha256": "b24237f4a51afeeeefb089f20145c5e6d848e9b55e3a2b33646359c96a95a633",
+      "sample_rate": 16000,
+      "duration_ms": 370,
+      "rms_db": -15.96,
+      "peak_db": -4.57
+    },
+    "ɔ": {
+      "file": "vowels/u_c994.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:38:22.867Z",
+      "sha256": "8befec6b3d063e5af3ce0a3371f84f6cead06205e2fd5d2c4aa08e77820fcf9c",
+      "sample_rate": 16000,
+      "duration_ms": 350,
+      "rms_db": -15.36,
+      "peak_db": -2.08
+    },
+    "u": {
+      "file": "vowels/u.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:40:25.690Z",
+      "sha256": "f58cf3a88b9a80b74d8a66c717683b92112830e06a14c8549692e3d0941f6d61",
+      "sample_rate": 16000,
+      "duration_ms": 290,
+      "rms_db": -20.27,
+      "peak_db": -10.05
+    },
+    "b": {
+      "file": "consonants/b.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:40:59.476Z",
+      "sha256": "5511675a3d29f5927c732395b1a0a5a7d2bc3fc15ba896ae71d61fe2a4e89573",
+      "sample_rate": 16000,
+      "duration_ms": 360,
+      "rms_db": -17.05,
+      "peak_db": -3.41
+    },
+    "d": {
+      "file": "consonants/d.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:41:26.532Z",
+      "sha256": "d477cb2f084094ead5640ace4379fd1d6f216d5606cd47df31e371b7508da5cf",
+      "sample_rate": 16000,
+      "duration_ms": 650,
+      "rms_db": -19.61,
+      "peak_db": -2.02
+    },
+    "f": {
+      "file": "consonants/f.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:41:41.346Z",
+      "sha256": "262be064d6e16afb1857e417b2ebce6f5671cdad1a8ce02c64d4c0267b4826e5",
+      "sample_rate": 16000,
+      "duration_ms": 500,
+      "rms_db": -22.96,
+      "peak_db": -6.16
+    },
+    "g": {
+      "file": "consonants/g.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:41:49.167Z",
+      "sha256": "5729d03da52c90235e3d4b870ddc70fbe174215dc650bcc35d240ab882838552",
+      "sample_rate": 16000,
+      "duration_ms": 450,
+      "rms_db": -20.47,
+      "peak_db": -4.82
+    },
+    "h": {
+      "file": "consonants/h.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:41:59.865Z",
+      "sha256": "554d27ffa844ab1b652365528396070c65e2be9aecfa4f6e9530ccbb3f9456a2",
+      "sample_rate": 16000,
+      "duration_ms": 850,
+      "rms_db": -23.14,
+      "peak_db": -4.55
+    },
+    "j": {
+      "file": "consonants/j.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:42:05.981Z",
+      "sha256": "37cafdc02b8ec08452e9d16f1fb179510be7b71b51e06302688550cc0c5f03fe",
+      "sample_rate": 16000,
+      "duration_ms": 510,
+      "rms_db": -21.43,
+      "peak_db": -7.14
+    },
+    "k": {
+      "file": "consonants/k.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:42:18.173Z",
+      "sha256": "04639522881e5fec3a423b0af61899b11cc292f05416066e3ea9e8e14fd9a5f1",
+      "sample_rate": 16000,
+      "duration_ms": 330,
+      "rms_db": -19.74,
+      "peak_db": -4.9
+    },
+    "l": {
+      "file": "consonants/l.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:42:31.705Z",
+      "sha256": "10b0c9bd1e3f2c192a7e84d47a8fcd4642998aa89a8773e53e57499d73c3d371",
+      "sample_rate": 16000,
+      "duration_ms": 510,
+      "rms_db": -16.59,
+      "peak_db": -1.66
+    },
+    "m": {
+      "file": "consonants/m.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:42:39.202Z",
+      "sha256": "976be8ad8a3e96d5d3e5a260a08dbbd177228aa9d4f10da4f5f9c1fe87d2b5cc",
+      "sample_rate": 16000,
+      "duration_ms": 530,
+      "rms_db": -18.83,
+      "peak_db": -2.82
+    },
+    "n": {
+      "file": "consonants/n.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:42:44.364Z",
+      "sha256": "55ff8620da74696eb9450dc1df5d0bf26d1a31ac6cab4e88c2ccdac38823d6bf",
+      "sample_rate": 16000,
+      "duration_ms": 470,
+      "rms_db": -17.62,
+      "peak_db": -2.45
+    },
+    "p": {
+      "file": "consonants/p.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:42:51.616Z",
+      "sha256": "13e200ff7a4cf6d04a97667703ec6410c27e1afb44c33e16dab975ef853d12a4",
+      "sample_rate": 16000,
+      "duration_ms": 330,
+      "rms_db": -22.22,
+      "peak_db": -10.24
+    },
+    "r": {
+      "file": "consonants/r.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:42:56.438Z",
+      "sha256": "fa098d1e3cd4f51acbae8d2a26785bb2520b6575a1f7fbc4e1d9c637d2293c0f",
+      "sample_rate": 16000,
+      "duration_ms": 450,
+      "rms_db": -17.03,
+      "peak_db": -1.43
+    },
+    "s": {
+      "file": "consonants/s.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:43:00.978Z",
+      "sha256": "1061ef9a64a173a09d355d0d3b6dc52bb0efa5247e4d14bd6e5b3a41f1957687",
+      "sample_rate": 16000,
+      "duration_ms": 640,
+      "rms_db": -17.96,
+      "peak_db": -4.18
+    },
+    "t": {
+      "file": "consonants/t.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:43:06.511Z",
+      "sha256": "b6ed24536d0b83a06e472f054683597b85c370fdab57d95a86f2c178bf6a8890",
+      "sample_rate": 16000,
+      "duration_ms": 390,
+      "rms_db": -21.51,
+      "peak_db": -7.6
+    },
+    "v": {
+      "file": "consonants/v.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:43:16.380Z",
+      "sha256": "525cd070496264277c8846b7098b0de654393745a47e7e2d9ba85fcb329b3d0c",
+      "sample_rate": 16000,
+      "duration_ms": 880,
+      "rms_db": -24.88,
+      "peak_db": -8.35
+    },
+    "w": {
+      "file": "consonants/w.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:43:24.483Z",
+      "sha256": "6e75a9f8264cfa4dfa93cdbeb9d7b9065831952593b46c368b350070fc250f30",
+      "sample_rate": 16000,
+      "duration_ms": 590,
+      "rms_db": -20.12,
+      "peak_db": -5.27
+    },
+    "y": {
+      "file": "consonants/y.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:43:29.858Z",
+      "sha256": "3c5602681129aa1c5c5d8f98c3b0e62d78e9487ef98369ea8e91dfa9831b3fd8",
+      "sample_rate": 16000,
+      "duration_ms": 580,
+      "rms_db": -18.96,
+      "peak_db": -2.94
+    },
+    "z": {
+      "file": "consonants/z.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:43:34.851Z",
+      "sha256": "f53968e59420cbcf136234d373eb8ed6c0edd3158ce1ac785fcde47a4e3a8eca",
+      "sample_rate": 16000,
+      "duration_ms": 640,
+      "rms_db": -21.58,
+      "peak_db": -3.35
+    },
+    "ch": {
+      "file": "consonants/ch.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:43:56.125Z",
+      "sha256": "0ea72b4014c201b718fb43d957ba70ba54b953534fb70f3f61f64edc8715ff22",
+      "sample_rate": 16000,
+      "duration_ms": 340,
+      "rms_db": -19.23,
+      "peak_db": -4.18
+    },
+    "sh": {
+      "file": "consonants/sh.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:44:05.266Z",
+      "sha256": "9fe89cbed56e4a08909a77c2824d6c78a04863e09a5b05691aaf8e5313816d52",
+      "sample_rate": 16000,
+      "duration_ms": 440,
+      "rms_db": -19.01,
+      "peak_db": -2.73
+    },
+    "ng": {
+      "file": "consonants/ng.wav",
+      "speaker": "speaker_01",
+      "recorded_at": "2026-05-06T16:44:33.936Z",
+      "sha256": "326d5e3573c9f9204aee39c5b0023e5cc2cfa04fbefa562978e8555b00f87b67",
+      "sample_rate": 16000,
+      "duration_ms": 790,
+      "rms_db": -21.76,
+      "peak_db": -4.77
+    }
+  }
 }

@@ -18,8 +18,10 @@ const AUDIO_DIR = path.join(ROOT, 'audio');
 const PHONEMES_FILE = path.join(DATA_DIR, 'phonemes.json');
 const RECORDINGS_FILE = path.join(DATA_DIR, 'recordings.json');
 const LEXICON_FILE = path.join(DATA_DIR, 'lexicon.json');
+const WORD_RECS_FILE = path.join(DATA_DIR, 'word-recordings.json');
+const WORDS_AUDIO_DIR = path.join(AUDIO_DIR, 'words');
 
-for (const d of [DATA_DIR, AUDIO_DIR, path.join(AUDIO_DIR, 'vowels'), path.join(AUDIO_DIR, 'consonants')]) {
+for (const d of [DATA_DIR, AUDIO_DIR, path.join(AUDIO_DIR, 'vowels'), path.join(AUDIO_DIR, 'consonants'), WORDS_AUDIO_DIR]) {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 }
 
@@ -207,7 +209,15 @@ function saveLexicon(lex) {
 }
 
 app.get('/api/lexicon', (_req, res) => {
-  res.json(loadLexicon());
+  const lex = loadLexicon();
+  const wordRecs = loadWordRecs().recordings;
+  // Annotate each word with its word-level audio URL (if any).
+  const out = { ...lex, words: {} };
+  for (const [w, entry] of Object.entries(lex.words)) {
+    const r = wordRecs[w];
+    out.words[w] = { ...entry, audio: r && r.file ? `/audio/${r.file}` : null };
+  }
+  res.json(out);
 });
 
 // Single-word add. Subject to the same strict pipeline as bulk.
@@ -241,7 +251,7 @@ app.post('/api/lexicon/bulk', (req, res) => {
     const text = String(req.body.text || '');
     const dryRun = !!req.body.dryRun;
     const reg = loadRegistry();
-    const recs = flattenRecordings(loadRecordings());
+    const recs = flattenRecordings(loadRecordings()).recordings;
     const lex = loadLexicon();
 
     const results = [];
@@ -307,10 +317,96 @@ app.delete('/api/lexicon/:word', (req, res) => {
   res.json({ ok: true });
 });
 
+// === Word recordings (natural-sounding word-level audio) ===
+function loadWordRecs() {
+  if (!fs.existsSync(WORD_RECS_FILE)) return { speaker: 'speaker_01', recordings: {} };
+  return readJson(WORD_RECS_FILE);
+}
+function saveWordRecs(data) {
+  assertValid('word-recordings', data);
+  writeJson(WORD_RECS_FILE, data);
+}
+function safeWordName(word) {
+  // ASCII-only words get their plain name; words with ɛ/ɔ get hex-suffixed for portability.
+  if (/^[a-z]+$/.test(word)) return `${word}.wav`;
+  const hex = Buffer.from(word, 'utf8').toString('hex');
+  return `w_${hex}.wav`;
+}
+
+const wordUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, WORDS_AUDIO_DIR),
+    filename: (req, _file, cb) => cb(null, safeWordName(req.params.word))
+  }),
+  fileFilter: (_req, file, cb) => {
+    const ok = /\.wav$/i.test(file.originalname) ||
+               file.mimetype === 'audio/wav' ||
+               file.mimetype === 'audio/wave' ||
+               file.mimetype === 'audio/x-wav';
+    cb(ok ? null : new Error('Only .wav files are accepted'), ok);
+  }
+});
+
+app.post('/api/word-recordings/:word', wordUpload.single('audio'), (req, res) => {
+  try {
+    const word = String(req.params.word || '').toLowerCase();
+    const lex = loadLexicon();
+    if (!lex.words[word]) return res.status(400).json({ error: `"${word}" is not in the lexicon` });
+    if (!req.file) return res.status(400).json({ error: 'no file' });
+
+    const buf = fs.readFileSync(req.file.path);
+    const sha256 = crypto.createHash('sha256').update(buf).digest('hex');
+    const relPath = `words/${path.basename(req.file.path)}`;
+
+    const meta = {
+      file: relPath,
+      speaker: (req.body && req.body.speaker) || 'speaker_01',
+      recorded_at: new Date().toISOString(),
+      sha256
+    };
+    for (const f of ['sample_rate', 'duration_ms', 'rms_db', 'peak_db']) {
+      if (req.body && req.body[f] != null && req.body[f] !== '') {
+        const n = Number(req.body[f]);
+        if (Number.isFinite(n)) meta[f] = n;
+      }
+    }
+
+    const data = loadWordRecs();
+    data.recordings[word] = meta;
+    saveWordRecs(data);
+    res.json({ ok: true, word, meta });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.delete('/api/word-recordings/:word', (req, res) => {
+  const word = String(req.params.word || '').toLowerCase();
+  const data = loadWordRecs();
+  const entry = data.recordings[word];
+  if (entry && entry.file) {
+    const p = path.join(AUDIO_DIR, entry.file);
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  }
+  delete data.recordings[word];
+  saveWordRecs(data);
+  res.json({ ok: true });
+});
+
+app.get('/api/word-recordings', (_req, res) => {
+  res.json(loadWordRecs());
+});
+
 app.post('/api/pronounce', (req, res) => {
   const reg = loadRegistry();
   const rec = flattenRecordings(loadRecordings());
-  res.json({ words: buildPronunciation(req.body.text || '', reg, rec) });
+  const words = loadWordRecs().recordings;
+  // Build word-audio map: word -> "/audio/<file>"
+  const wordAudio = {};
+  for (const [w, entry] of Object.entries(words)) {
+    if (entry && entry.file) wordAudio[w] = `/audio/${entry.file}`;
+  }
+  res.json({ words: buildPronunciation(req.body.text || '', reg, rec, wordAudio) });
 });
 
 const PORT = process.env.PORT || 3000;

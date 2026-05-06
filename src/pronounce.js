@@ -6,10 +6,27 @@
 const { tokenize } = require('./tokenizer');
 const { syllabifyTokens } = require('./syllables');
 
-function buildPronunciation(text, registry, recordings) {
+// wordAudio: optional { word -> "/audio/words/x.wav" } map.
+// When a word has a recorded audio file, the playlist becomes a single word-level
+// utterance instead of phoneme concatenation. Phoneme fallback is used otherwise.
+function buildPronunciation(text, registry, recordings, wordAudio = {}) {
   const words = tokenize(text, registry);
   return words.map(w => {
     const syllables = syllabifyTokens(w.tokens, registry.phonemes);
+    const wordKey = w.word.toLowerCase();
+
+    // Prefer word-level recording when available.
+    if (wordAudio[wordKey]) {
+      return {
+        word: w.word,
+        tokens: w.tokens,
+        syllables,
+        source: 'word',
+        playlist: [{ token: w.word, audio: wordAudio[wordKey], missing: false }]
+      };
+    }
+
+    // Fallback: phoneme concatenation.
     const playlist = [];
     for (const tok of w.tokens) {
       if (!tok.known) {
@@ -23,7 +40,7 @@ function buildPronunciation(text, registry, recordings) {
         missing: !file
       });
     }
-    return { word: w.word, tokens: w.tokens, syllables, playlist };
+    return { word: w.word, tokens: w.tokens, syllables, source: 'phonemes', playlist };
   });
 }
 
