@@ -369,6 +369,58 @@ lexGloss.addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('btnAddWord').click();
 });
 
+// === Bulk import ===
+const bulkText = document.getElementById('bulkText');
+const bulkResults = document.getElementById('bulkResults');
+const bulkSummary = document.getElementById('bulkSummary');
+const btnBulkSave = document.getElementById('btnBulkSave');
+
+function renderBulk(data) {
+  const tag = data.dryRun ? ' (preview)' : '';
+  bulkSummary.textContent =
+    `total ${data.total} · added ${data.added} · skipped ${data.skipped} · rejected ${data.rejected}${tag}`;
+  bulkResults.innerHTML = data.results.map(r => {
+    const cls = r.status === 'added' ? 'ok' : r.status === 'skipped' ? 'dup' : 'err';
+    const status = r.status.toUpperCase();
+    const tokens = (r.phonemes && r.phonemes.length) ? r.phonemes.join(' · ') : '—';
+    const sylls = (r.syllables && r.syllables.length) ? r.syllables.join(' · ') : '';
+    const errs = (r.errors && r.errors.length) ? r.errors.join('; ') : '';
+    return `<div class="bulk-row ${cls}">
+      <span class="w">${r.word || '?'}</span>
+      <span class="p">
+        <div>tokens: ${tokens}</div>
+        ${sylls ? `<div>syllables: ${sylls}</div>` : ''}
+        ${errs  ? `<div>${errs}</div>` : ''}
+        ${r.gloss ? `<div class="g">${r.gloss}</div>` : ''}
+      </span>
+      <span class="status-tag">${status}</span>
+    </div>`;
+  }).join('');
+  btnBulkSave.disabled = data.dryRun ? (data.added === 0) : true;
+}
+
+document.getElementById('btnBulkPreview').onclick = async () => {
+  const r = await fetch('/api/lexicon/bulk', {
+    method: 'POST', headers: {'content-type':'application/json'},
+    body: JSON.stringify({ text: bulkText.value, dryRun: true })
+  });
+  const data = await r.json();
+  if (!r.ok) { alert(data.error || 'Failed'); return; }
+  renderBulk(data);
+};
+
+btnBulkSave.onclick = async () => {
+  const r = await fetch('/api/lexicon/bulk', {
+    method: 'POST', headers: {'content-type':'application/json'},
+    body: JSON.stringify({ text: bulkText.value, dryRun: false })
+  });
+  const data = await r.json();
+  if (!r.ok) { alert(data.error || 'Failed'); return; }
+  renderBulk(data);
+  loadLexicon();
+  bulkText.value = '';
+};
+
 document.getElementById('btnAnalyze').onclick = async () => {
   const text = textInput.value.trim();
   if (!text) return;

@@ -10,6 +10,7 @@ const { tokenize } = require('./src/tokenizer');
 const { syllabifyTokens } = require('./src/syllables');
 const { buildPronunciation } = require('./src/pronounce');
 const { assertValid, assertConsistency, assertLexiconConsistency } = require('./src/validate');
+const { validateWord } = require('./src/word-validator');
 
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
@@ -209,28 +210,91 @@ app.get('/api/lexicon', (_req, res) => {
   res.json(loadLexicon());
 });
 
+// Single-word add. Subject to the same strict pipeline as bulk.
 app.post('/api/lexicon', (req, res) => {
   try {
-    const word = String(req.body.word || '').trim().toLowerCase();
-    if (!word) return res.status(400).json({ error: 'word is required' });
     const reg = loadRegistry();
-
-    // Use the deterministic tokenizer to derive phonemes from the spelling.
-    const toks = tokenize(word, reg)[0]?.tokens || [];
-    const unknown = toks.filter(t => !t.known).map(t => t.token);
-    if (unknown.length) {
-      return res.status(400).json({ error: `unknown character(s): ${unknown.join(', ')}` });
-    }
-    const phonemes = toks.map(t => t.token);
+    const recs = flattenRecordings(loadRecordings());
+    const v = validateWord(req.body.word || '', reg, recs);
+    if (!v.ok) return res.status(400).json({ error: v.errors.join('; '), details: v });
 
     const lex = loadLexicon();
-    lex.words[word] = {
-      phonemes,
-      gloss: String(req.body.gloss || '').trim() || undefined
-    };
-    if (!lex.words[word].gloss) delete lex.words[word].gloss;
+    if (lex.words[v.normalized]) {
+      return res.status(409).json({ error: `"${v.normalized}" already exists; updates must be done by deleting then re-adding` });
+    }
+    const gloss = String(req.body.gloss || '').trim();
+    lex.words[v.normalized] = gloss ? { phonemes: v.phonemes, gloss } : { phonemes: v.phonemes };
     saveLexicon(lex);
-    res.json({ word, phonemes, gloss: lex.words[word].gloss || null });
+    res.json({ word: v.normalized, phonemes: v.phonemes, syllables: v.syllables, gloss: gloss || null });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// Bulk import — strict, controlled ingestion pipeline.
+// - Same validator as single-add (centralized)
+// - NO OVERWRITE: existing words are SKIPPED, never updated in bulk
+// - Invalid lines are rejected per-line; valid lines proceed
+// - Returns full per-line report (status, phonemes, syllables, errors)
+app.post('/api/lexicon/bulk', (req, res) => {
+  try {
+    const text = String(req.body.text || '');
+    const dryRun = !!req.body.dryRun;
+    const reg = loadRegistry();
+    const recs = flattenRecordings(loadRecordings());
+    const lex = loadLexicon();
+
+    const results = [];
+    const lines = text.split(/\r?\n/);
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line || line.startsWith('#')) continue;
+
+      // Parse "<word>" optionally followed by a separator and gloss.
+      // Gloss is metadata only — does NOT participate in validation.
+      const m = line.match(/^(\S+?)(?:\s*[=|\t]\s*(.*))?$/);
+      if (!m) { results.push({ line, status: 'rejected', errors: ['unparseable line'] }); continue; }
+      const wordRaw = m[1];
+      const gloss = (m[2] || '').trim();
+
+      const v = validateWord(wordRaw, reg, recs);
+      if (!v.ok) {
+        results.push({
+          line, word: v.normalized || wordRaw, status: 'rejected',
+          phonemes: v.phonemes || [], syllables: v.syllables || [], errors: v.errors
+        });
+        continue;
+      }
+
+      const sylStrings = v.syllables.map(s => s.tokens.map(t => t.token).join(''));
+
+      if (lex.words[v.normalized]) {
+        results.push({
+          line, word: v.normalized, status: 'skipped',
+          phonemes: v.phonemes, syllables: sylStrings,
+          errors: ['already exists (bulk does not overwrite — delete to re-add)']
+        });
+        continue;
+      }
+
+      if (!dryRun) {
+        lex.words[v.normalized] = gloss
+          ? { phonemes: v.phonemes, gloss }
+          : { phonemes: v.phonemes };
+      }
+      results.push({
+        line, word: v.normalized, status: 'added',
+        phonemes: v.phonemes, syllables: sylStrings, gloss: gloss || null
+      });
+    }
+
+    if (!dryRun) saveLexicon(lex);
+
+    const total    = results.length;
+    const added    = results.filter(r => r.status === 'added').length;
+    const skipped  = results.filter(r => r.status === 'skipped').length;
+    const rejected = results.filter(r => r.status === 'rejected').length;
+    res.json({ dryRun, total, added, skipped, rejected, results });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }

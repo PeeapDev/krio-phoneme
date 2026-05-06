@@ -37,13 +37,35 @@
 
     <section>
       <h2>2. Lexicon</h2>
-      <p class="hint">Type any Krio word. The tokenizer auto-splits it into phonemes (digraphs first). Add a gloss to remember the meaning.</p>
+      <p class="hint">
+        Strict pipeline: lowercase a–z plus <code>ɛ</code> <code>ɔ</code> only · single word (no spaces, no hyphens) ·
+        every phoneme must exist in registry <strong>and have an audio recording</strong> ·
+        syllables must fit (C){0,3} V (C){0,2}.
+        <br>Bulk imports never overwrite — duplicates are skipped.
+      </p>
       <div class="row">
         <input id="lexWord"  type="text" placeholder="Krio word (e.g. kushe)" />
         <input id="lexGloss" type="text" placeholder="English gloss (optional)" />
         <button id="btnAddWord">Add</button>
       </div>
       <div id="lexPreview" class="muted" style="margin-top:6px;font-size:13px"></div>
+
+      <details style="margin-top:14px">
+        <summary style="cursor:pointer;color:#cfe0ff">▸ Bulk import (paste many words)</summary>
+        <p class="hint" style="margin-top:8px">
+          One word per line. Optional gloss after <code>=</code> or <code>|</code> or tab.
+          Lines starting with <code>#</code> are ignored. Examples:
+          <code>kushe = hello</code>, <code>chɔp | food</code>, <code>bɛd</code>.
+        </p>
+        <textarea id="bulkText" rows="10" placeholder="kushe = hello&#10;padi = friend&#10;chɔp = food&#10;bɛd = bed"></textarea>
+        <div class="row" style="margin-top:8px">
+          <button id="btnBulkPreview">Preview</button>
+          <button id="btnBulkSave" disabled>Save All Valid</button>
+          <span id="bulkSummary" class="muted"></span>
+        </div>
+        <div id="bulkResults" class="bulk-results"></div>
+      </details>
+
       <div id="lexList" class="lex-list"></div>
     </section>
 

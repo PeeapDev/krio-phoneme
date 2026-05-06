@@ -44,3 +44,14 @@ audio { height: 28px; }
 .lex-item .p { color: #cfe0ff; font-family: ui-monospace, monospace; font-size: 12px; }
 .lex-item .g { color: #8a93a6; font-size: 12px; }
 .lex-item button { padding: 2px 6px; font-size: 11px; }
+textarea { width: 100%; background: #0f1218; color: #e6e9ef; border: 1px solid #232735; border-radius: 6px; padding: 10px; font-family: ui-monospace, monospace; font-size: 13px; resize: vertical; }
+.bulk-results { margin-top: 10px; max-height: 280px; overflow-y: auto; font-family: ui-monospace, monospace; font-size: 12px; }
+.bulk-row { padding: 4px 8px; border-radius: 4px; margin-bottom: 2px; display: flex; gap: 10px; align-items: center; }
+.bulk-row.ok  { background: #133023; color: #b8f0c9; }
+.bulk-row.dup { background: #2a2418; color: #f5d486; }
+.bulk-row.err { background: #2a1518; color: #f5a3aa; }
+.bulk-row .w { font-weight: 600; min-width: 100px; }
+.bulk-row .p { color: inherit; opacity: 0.85; flex: 1; }
+.bulk-row .g { opacity: 0.7; font-style: italic; }
+.bulk-row .p { display: flex; flex-direction: column; gap: 2px; }
+.bulk-row .status-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 3px; background: rgba(0,0,0,0.3); }
