@@ -16,8 +16,11 @@ const QUALITY = {
   silenceTrimDb: -45  // threshold for trimming leading/trailing silence
 };
 
+let phonemeList = [];
+
 async function loadPhonemes() {
   const r = await fetch('/api/phonemes').then(r => r.json());
+  phonemeList = r.phonemes;
   grid.innerHTML = '';
   for (const p of r.phonemes) {
     const card = document.createElement('div');
@@ -25,6 +28,7 @@ async function loadPhonemes() {
     card.innerHTML = `
       <div class="key">${p.key}${p.isDigraph ? ' <small class="muted">digraph</small>' : ''}</div>
       <div class="ipa">${p.ipa} · ${p.type}</div>
+      ${p.example ? `<div class="ipa" style="font-style:italic">e.g. ${p.example}</div>` : ''}
       <div class="row">
         ${p.audio ? `<audio controls src="${p.audio}"></audio>` : `<small class="muted">no recording</small>`}
       </div>
@@ -40,7 +44,117 @@ async function loadPhonemes() {
   grid.querySelectorAll('button.rec').forEach(b => b.onclick = () => toggleRecord(b.dataset.key, b));
   grid.querySelectorAll('button.del').forEach(b => b.onclick = () => deleteRec(b.dataset.key));
   grid.querySelectorAll('input[type=file]').forEach(i => i.onchange = e => uploadFile(i.dataset.key, e.target.files[0]));
+
+  const recCount = r.phonemes.filter(p => p.audio).length;
+  document.getElementById('coverage').textContent = `Coverage: ${recCount} / ${r.phonemes.length}`;
 }
+
+// === Guided recording mode ===
+const guided = {
+  active: false, queue: [], idx: 0, recorder: null, stream: null, chunks: []
+};
+
+function setStatus(msg, cls) {
+  const s = document.getElementById('gStatus');
+  s.textContent = msg || '';
+  s.className = 'guided-status' + (cls ? ' ' + cls : '');
+}
+
+function renderGuided() {
+  const p = guided.queue[guided.idx];
+  if (!p) return endGuided('Session complete!');
+  document.getElementById('gKey').textContent = p.key;
+  document.getElementById('gIpa').textContent = `${p.ipa} · ${p.type}${p.isDigraph ? ' · digraph' : ''}`;
+  document.getElementById('gEx').textContent = p.example ? `Example: ${p.example}` : '';
+  document.getElementById('gProg').textContent = `${guided.idx + 1} / ${guided.queue.length}`;
+  document.getElementById('gRec').textContent = '● Record';
+  document.getElementById('gRec').classList.remove('active');
+  setStatus('Press Record, say the sound clearly, press Stop.');
+}
+
+async function startGuided() {
+  // Queue: unrecorded first, then already-recorded (so user can re-record).
+  const unrec = phonemeList.filter(p => !p.audio);
+  const rec   = phonemeList.filter(p => p.audio);
+  guided.queue = [...unrec, ...rec];
+  guided.idx = 0;
+  guided.active = true;
+  document.getElementById('guidedPanel').hidden = false;
+  document.getElementById('btnGuided').textContent = '▶ Resume Guided Session';
+  renderGuided();
+}
+
+function endGuided(msg) {
+  guided.active = false;
+  if (guided.stream) guided.stream.getTracks().forEach(t => t.stop());
+  document.getElementById('guidedPanel').hidden = true;
+  loadPhonemes();
+  if (msg) alert(msg);
+}
+
+async function guidedToggle() {
+  const btn = document.getElementById('gRec');
+  const p = guided.queue[guided.idx];
+  if (!p) return;
+
+  // Stop case
+  if (guided.recorder && guided.recorder.state === 'recording') {
+    guided.recorder.stop();
+    btn.textContent = '● Record';
+    btn.classList.remove('active');
+    return;
+  }
+
+  // Start case
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, noiseSuppression: true } });
+  } catch (e) { setStatus('Mic denied: ' + e.message, 'err'); return; }
+  guided.stream = stream;
+  guided.chunks = [];
+  const r = new MediaRecorder(stream);
+  guided.recorder = r;
+  r.ondataavailable = ev => guided.chunks.push(ev.data);
+  r.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    const blob = new Blob(guided.chunks, { type: r.mimeType || 'audio/webm' });
+    setStatus('Encoding…');
+    try {
+      const { blob: wav, meta } = await blobToWav(blob);
+      const gate = checkQuality(meta);
+      if (!gate.ok) {
+        setStatus('Rejected: ' + gate.reasons.join('; '), 'err');
+        return;
+      }
+      await uploadBlob(p.key, wav, meta);
+      setStatus(`Saved (${meta.duration_ms}ms · RMS ${meta.rms_db}dB · peak ${meta.peak_db}dB)`, 'ok');
+      // Auto-advance after short delay.
+      setTimeout(() => {
+        guided.idx++;
+        if (guided.idx >= guided.queue.length) return endGuided('Session complete!');
+        // Refresh phonemeList state for the just-saved item.
+        const saved = phonemeList.find(x => x.key === p.key);
+        if (saved) saved.audio = '/saved';
+        renderGuided();
+      }, 700);
+    } catch (e) {
+      setStatus('Encode failed: ' + e.message, 'err');
+    }
+  };
+  r.start();
+  btn.textContent = '■ Stop';
+  btn.classList.add('active');
+  setStatus('Recording…');
+}
+
+document.getElementById('btnGuided').onclick = startGuided;
+document.getElementById('gRec').onclick = guidedToggle;
+document.getElementById('gSkip').onclick = () => {
+  guided.idx++;
+  if (guided.idx >= guided.queue.length) return endGuided('Session complete!');
+  renderGuided();
+};
+document.getElementById('gStop').onclick = () => endGuided();
 
 async function toggleRecord(key, btn) {
   const s = recState[key];

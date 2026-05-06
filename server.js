@@ -9,13 +9,14 @@ const crypto = require('crypto');
 const { tokenize } = require('./src/tokenizer');
 const { syllabifyTokens } = require('./src/syllables');
 const { buildPronunciation } = require('./src/pronounce');
-const { assertValid, assertConsistency } = require('./src/validate');
+const { assertValid, assertConsistency, assertLexiconConsistency } = require('./src/validate');
 
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
 const AUDIO_DIR = path.join(ROOT, 'audio');
 const PHONEMES_FILE = path.join(DATA_DIR, 'phonemes.json');
 const RECORDINGS_FILE = path.join(DATA_DIR, 'recordings.json');
+const LEXICON_FILE = path.join(DATA_DIR, 'lexicon.json');
 
 for (const d of [DATA_DIR, AUDIO_DIR]) {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
@@ -49,7 +50,14 @@ try {
   const reg = loadRegistry();
   const rec = loadRecordings();
   assertConsistency(reg, rec);
-  console.log('[validate] phonemes.json and recordings.json OK');
+  if (fs.existsSync(LEXICON_FILE)) {
+    const lex = readJson(LEXICON_FILE);
+    assertValid('lexicon', lex);
+    assertLexiconConsistency(reg, lex);
+    console.log(`[validate] phonemes/recordings/lexicon OK (${Object.keys(lex.words).length} words)`);
+  } else {
+    console.log('[validate] phonemes.json and recordings.json OK');
+  }
 } catch (e) {
   console.error('[validate] FATAL:', e.message);
   process.exit(1);
@@ -99,6 +107,7 @@ app.get('/api/phonemes', (_req, res) => {
       key,
       ipa: meta.ipa,
       type: meta.type,
+      example: meta.example || null,
       isDigraph: (reg.digraphs || []).includes(key),
       audio: file ? `/audio/${file}` : null,
       meta: typeof entry === 'object' ? entry : null
@@ -169,6 +178,11 @@ app.post('/api/syllabify', (req, res) => {
       syllables: syllabifyTokens(w.tokens, reg.phonemes)
     }))
   });
+});
+
+app.get('/api/lexicon', (_req, res) => {
+  if (!fs.existsSync(LEXICON_FILE)) return res.json({ version: 1, words: {} });
+  res.json(readJson(LEXICON_FILE));
 });
 
 app.post('/api/pronounce', (req, res) => {

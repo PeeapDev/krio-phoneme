@@ -18,8 +18,9 @@
         "required": ["ipa", "type"],
         "additionalProperties": false,
         "properties": {
-          "ipa":  { "type": "string", "minLength": 1 },
-          "type": { "type": "string", "enum": ["vowel", "consonant"] }
+          "ipa":     { "type": "string", "minLength": 1 },
+          "type":    { "type": "string", "enum": ["vowel", "consonant"] },
+          "example": { "type": "string" }
         }
       }
     }

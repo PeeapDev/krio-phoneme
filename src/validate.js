@@ -9,16 +9,21 @@ const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 const SCHEMAS = path.join(__dirname, '..', 'schemas');
 const phonemeSchema   = JSON.parse(fs.readFileSync(path.join(SCHEMAS, 'phonemes.schema.json'), 'utf8'));
 const recordingSchema = JSON.parse(fs.readFileSync(path.join(SCHEMAS, 'recordings.schema.json'), 'utf8'));
+const lexiconSchema   = JSON.parse(fs.readFileSync(path.join(SCHEMAS, 'lexicon.schema.json'), 'utf8'));
 
-const validatePhonemes   = ajv.compile(phonemeSchema);
-const validateRecordings = ajv.compile(recordingSchema);
+const validators = {
+  phonemes:   ajv.compile(phonemeSchema),
+  recordings: ajv.compile(recordingSchema),
+  lexicon:    ajv.compile(lexiconSchema)
+};
 
 function fmt(errors) {
   return (errors || []).map(e => `  ${e.instancePath || '/'} ${e.message}`).join('\n');
 }
 
 function assertValid(kind, data) {
-  const fn = kind === 'phonemes' ? validatePhonemes : validateRecordings;
+  const fn = validators[kind];
+  if (!fn) throw new Error(`unknown schema kind: ${kind}`);
   if (!fn(data)) {
     const err = new Error(`Invalid ${kind}.json:\n${fmt(fn.errors)}`);
     err.validation = fn.errors;
@@ -38,4 +43,15 @@ function assertConsistency(phonemes, recordings) {
   }
 }
 
-module.exports = { assertValid, assertConsistency };
+function assertLexiconConsistency(phonemes, lexicon) {
+  const keys = new Set(Object.keys(phonemes.phonemes));
+  const errs = [];
+  for (const [word, entry] of Object.entries(lexicon.words)) {
+    for (const p of entry.phonemes) {
+      if (!keys.has(p)) errs.push(`word "${word}" uses unknown phoneme "${p}"`);
+    }
+  }
+  if (errs.length) throw new Error('lexicon.json invalid:\n  - ' + errs.join('\n  - '));
+}
+
+module.exports = { assertValid, assertConsistency, assertLexiconConsistency };

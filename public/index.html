@@ -16,6 +16,22 @@
     <section>
       <h2>1. Phoneme Registry</h2>
       <p class="hint">Single speaker, clean environment, one recording per phoneme. Files saved as <code>phoneme_&lt;key&gt;.wav</code>.</p>
+      <div class="row" style="margin-bottom:10px">
+        <button id="btnGuided">▶ Start Guided Session</button>
+        <span id="coverage" class="muted"></span>
+      </div>
+      <div id="guidedPanel" class="guided" hidden>
+        <div class="guided-key" id="gKey">—</div>
+        <div class="guided-ipa" id="gIpa"></div>
+        <div class="guided-ex"  id="gEx"></div>
+        <div class="guided-progress" id="gProg"></div>
+        <div class="row">
+          <button id="gRec" class="rec">● Record</button>
+          <button id="gSkip">Skip</button>
+          <button id="gStop">End Session</button>
+        </div>
+        <div class="guided-status" id="gStatus"></div>
+      </div>
       <div id="phonemeGrid" class="grid"></div>
     </section>
 

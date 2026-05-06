@@ -29,3 +29,12 @@ input[type=text] { flex: 1; background: #161922; color: #e6e8ee; border: 1px sol
 small.muted { color: #8a93a6; }
 .upload-label { font-size: 12px; color: #8a93a6; cursor: pointer; }
 audio { height: 28px; }
+.guided { background: #161922; border: 1px solid #4f8cff44; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.guided-key { font-size: 64px; font-weight: 700; text-align: center; color: #cfe0ff; line-height: 1; margin-bottom: 4px; }
+.guided-ipa { text-align: center; color: #8a93a6; font-size: 18px; }
+.guided-ex  { text-align: center; color: #cfd5e3; font-size: 14px; margin: 6px 0 12px; font-style: italic; }
+.guided-progress { text-align: center; color: #8a93a6; font-size: 12px; margin-bottom: 12px; }
+.guided .row { justify-content: center; }
+.guided-status { text-align: center; margin-top: 10px; min-height: 18px; font-size: 13px; color: #8a93a6; }
+.guided-status.ok { color: #2ecc71; }
+.guided-status.err { color: #e74c3c; }
