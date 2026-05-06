@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RecordingsManifest",
+  "type": "object",
+  "required": ["speaker", "recordings"],
+  "additionalProperties": false,
+  "properties": {
+    "speaker": { "type": "string", "minLength": 1 },
+    "recordings": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string", "pattern": "^phoneme_.+\\.wav$" },
+          {
+            "type": "object",
+            "required": ["file"],
+            "additionalProperties": false,
+            "properties": {
+              "file":         { "type": "string", "pattern": "^phoneme_.+\\.wav$" },
+              "speaker":      { "type": "string" },
+              "sample_rate":  { "type": "integer", "minimum": 8000, "maximum": 96000 },
+              "duration_ms":  { "type": "number", "minimum": 0 },
+              "rms_db":       { "type": "number" },
+              "peak_db":      { "type": "number" },
+              "recorded_at":  { "type": "string" },
+              "sha256":       { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

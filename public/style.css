@@ -1,0 +1,31 @@
+* { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; background: #0f1115; color: #e6e8ee; }
+header { padding: 24px 32px; border-bottom: 1px solid #222; }
+h1 { margin: 0; font-size: 22px; }
+.sub { margin: 4px 0 0; color: #8a93a6; font-size: 13px; }
+main { padding: 24px 32px; max-width: 1100px; }
+section { margin-bottom: 36px; }
+h2 { font-size: 16px; color: #cfd5e3; border-left: 3px solid #4f8cff; padding-left: 8px; }
+.hint { color: #8a93a6; font-size: 13px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap: 10px; }
+.card { background: #161922; border: 1px solid #232735; border-radius: 8px; padding: 10px; }
+.card .key { font-size: 18px; font-weight: 600; }
+.card .ipa { color: #8a93a6; font-size: 13px; margin-bottom: 8px; }
+.card .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.card.digraph { border-color: #4f8cff44; }
+.card.has-audio { border-color: #2ecc7144; }
+button { background: #1f2433; color: #e6e8ee; border: 1px solid #2c3346; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+button:hover { background: #2a3147; }
+button.rec { background: #3a1f24; border-color: #5a2730; }
+button.rec.active { background: #c0392b; border-color: #c0392b; }
+input[type=text] { flex: 1; background: #161922; color: #e6e8ee; border: 1px solid #2c3346; border-radius: 6px; padding: 8px 10px; font-size: 14px; }
+.row { display: flex; gap: 8px; align-items: center; }
+#analysis { margin-top: 16px; }
+.word-block { background: #161922; border: 1px solid #232735; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.word-block h3 { margin: 0 0 6px; font-size: 15px; }
+.tok { display: inline-block; background: #1f2433; padding: 2px 8px; border-radius: 4px; margin: 2px; font-family: ui-monospace, monospace; font-size: 13px; }
+.tok.missing { background: #5a2730; }
+.syl { display: inline-block; background: #22324a; color: #cfe0ff; padding: 2px 8px; border-radius: 4px; margin: 2px; font-family: ui-monospace, monospace; font-size: 13px; }
+small.muted { color: #8a93a6; }
+.upload-label { font-size: 12px; color: #8a93a6; cursor: pointer; }
+audio { height: 28px; }

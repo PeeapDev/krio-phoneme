@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PhonemeRegistry",
+  "type": "object",
+  "required": ["digraphs", "phonemes"],
+  "additionalProperties": false,
+  "properties": {
+    "digraphs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 2, "maxLength": 3 },
+      "uniqueItems": true
+    },
+    "phonemes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["ipa", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "ipa":  { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "enum": ["vowel", "consonant"] }
+        }
+      }
+    }
+  }
+}

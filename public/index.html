@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Krio Phoneme System</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Krio Phoneme &amp; Pronunciation</h1>
+    <p class="sub">Phase 1 · single-speaker · rule-based · no AI</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>1. Phoneme Registry</h2>
+      <p class="hint">Single speaker, clean environment, one recording per phoneme. Files saved as <code>phoneme_&lt;key&gt;.wav</code>.</p>
+      <div id="phonemeGrid" class="grid"></div>
+    </section>
+
+    <section>
+      <h2>2. Pronounce Text</h2>
+      <div class="row">
+        <input id="textInput" type="text" placeholder="e.g. bata kushe chop" />
+        <button id="btnPronounce">Pronounce</button>
+        <button id="btnAnalyze">Analyze</button>
+      </div>
+      <div id="analysis"></div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
